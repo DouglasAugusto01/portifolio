@@ -113,19 +113,17 @@ const contactForm = document.querySelector('.contact-form');
 if (contactForm) {
     contactForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        
-        // Get form data
-        const formData = new FormData(contactForm);
-        const name = contactForm.querySelector('input[type="text"]').value;
-        const email = contactForm.querySelector('input[type="email"]').value;
-        const message = contactForm.querySelector('textarea').value;
-        
+
+        const name = contactForm.querySelector('input[type="text"]').value.trim();
+        const email = contactForm.querySelector('input[type="email"]').value.trim();
+        const message = contactForm.querySelector('textarea').value.trim();
+
         // Simple validation
         if (!name || !email || !message) {
             alert('Por favor, preencha todos os campos.');
             return;
         }
-        
+
         // Show success message (in a real application, you would send this to a server)
         alert('Mensagem enviada com sucesso! Entrarei em contato em breve.');
         contactForm.reset();
@@ -153,38 +151,72 @@ window.addEventListener('load', () => {
     }, 100);
 });
 
-// Mobile menu toggle (for future implementation)
-function createMobileMenu() {
-    const nav = document.querySelector('nav');
-    const menuToggle = document.createElement('button');
-    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-    menuToggle.className = 'mobile-menu-toggle';
-    menuToggle.style.cssText = `
-        display: none;
-        background: none;
-        border: none;
-        color: white;
-        font-size: 1.5rem;
-        cursor: pointer;
-    `;
-    
-    nav.appendChild(menuToggle);
-    
-    // Show mobile menu button on small screens
-    function checkScreenSize() {
-        if (window.innerWidth <= 768) {
-            menuToggle.style.display = 'block';
-        } else {
-            menuToggle.style.display = 'none';
-        }
-    }
-    
-    window.addEventListener('resize', checkScreenSize);
-    checkScreenSize();
+// Mobile menu toggle
+const menuToggle = document.getElementById('menuToggle');
+const navLinks = document.getElementById('navLinks');
+
+if (menuToggle && navLinks) {
+    menuToggle.addEventListener('click', () => {
+        const isOpen = navLinks.classList.toggle('open');
+        menuToggle.setAttribute('aria-expanded', String(isOpen));
+        menuToggle.innerHTML = isOpen
+            ? '<i class="fas fa-times" aria-hidden="true"></i>'
+            : '<i class="fas fa-bars" aria-hidden="true"></i>';
+    });
+
+    // Close the mobile menu after choosing a link
+    navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('open');
+            menuToggle.setAttribute('aria-expanded', 'false');
+            menuToggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
+        });
+    });
 }
 
-// Initialize mobile menu
-createMobileMenu();
+// Dark/light theme toggle, persisted in localStorage
+const themeToggle = document.getElementById('themeToggle');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const storedTheme = localStorage.getItem('theme');
+const initialTheme = storedTheme || (prefersDark ? 'dark' : 'light');
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    if (themeToggle) {
+        const icon = themeToggle.querySelector('i');
+        icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        icon.setAttribute('aria-hidden', 'true');
+    }
+}
+
+applyTheme(initialTheme);
+
+if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        applyTheme(newTheme);
+        localStorage.setItem('theme', newTheme);
+    });
+}
+
+// Dynamic footer year
+const yearEl = document.getElementById('year');
+if (yearEl) {
+    yearEl.textContent = new Date().getFullYear();
+}
+
+// Back to top button
+const backToTop = document.getElementById('backToTop');
+if (backToTop) {
+    window.addEventListener('scroll', () => {
+        backToTop.classList.toggle('visible', window.scrollY > 400);
+    });
+
+    backToTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
 
 // Add scroll progress indicator
 function createScrollProgress() {
